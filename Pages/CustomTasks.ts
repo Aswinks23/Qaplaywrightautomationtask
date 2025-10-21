@@ -1,31 +1,37 @@
-import { Page, test, Locator, expect } from "@playwright/test";
-import { threadCpuUsage } from "process";
+import { Locator, Page, expect } from "@playwright/test";
 import fs from "fs";
 import path from "path";
-import { escape } from "querystring";
+import { PdfReader } from "pdfreader";
 
+/**
+ * CustomTask class automates various user interactions
+ * such as file download, upload, and drag-and-drop actions
+ * on the Automation Demo site (https://demo.automationtesting.in).
+ */
 export default class CustomTask {
   readonly page: Page;
-  readonly Morelink: Locator;
-  readonly Downloadpage: Locator;
-  readonly Downloadpageheading: Locator;
+
+  // Locators for different UI elements across pages
+  readonly moreLink: Locator;
+  readonly downloadPage: Locator;
+  readonly downloadPageHeading: Locator;
   readonly textBoxTxt: Locator;
-  readonly GenerateButton: Locator;
-  readonly Downloadfil: Locator;
-  readonly Mainhead: Locator;
-  readonly UploadPage: Locator;
-  readonly UploadInput: Locator;
-  readonly removebutton: Locator;
-  readonly uploadbutton: Locator;
-  readonly BrowseFile: Locator;
+  readonly generateButton: Locator;
+  readonly downloadFil: Locator;
+  readonly mainHead: Locator;
+  readonly uploadPage: Locator;
+  readonly uploadInput: Locator;
+  readonly removeButton: Locator;
+  readonly uploadButton: Locator;
+  readonly browseFile: Locator;
   readonly interactionLink: Locator;
-  readonly Staticlink: Locator;
-  readonly Dragandrop: Locator;
-  readonly dragim1: Locator;
-  readonly dragim2: Locator;
-  readonly dragim3: Locator;
-  readonly droparea: Locator;
-  readonly checkdrop: Locator;
+  readonly staticLink: Locator;
+  readonly dragAndDrop: Locator;
+  readonly dragIm1: Locator;
+  readonly dragIm2: Locator;
+  readonly dragIm3: Locator;
+  readonly dropArea: Locator;
+  readonly checkDrop: Locator;
   readonly dynamicLink: Locator;
   readonly downloadButton: Locator;
   readonly angularImage: Locator;
@@ -33,201 +39,180 @@ export default class CustomTask {
   readonly nodeImage: Locator;
   readonly staticPage: Locator;
 
+  /**
+   * Constructor initializes all page locators.
+   * @param {Page} page - Playwright Page object.
+   */
   constructor(page: Page) {
     this.page = page;
-    this.Morelink = page.locator('//a[text()="More"]');
-    this.Downloadpage = page.locator('//a[text()="File Download"]');
-    this.Downloadpageheading = page.locator(
-      '//h2[text()="File Download Demo for Automation"]'
-    );
+    // Menu and navigation elements
+    this.moreLink = page.locator('//a[text()="More"]');
+    this.downloadPage = page.locator('//a[text()="File Download"]');
+    this.downloadPageHeading = page.locator('//h2[text()="File Download Demo for Automation"]');
     this.textBoxTxt = page.locator('//textarea[@id="textbox"]');
-    this.GenerateButton = page.locator('//button[@id="createTxt"]');
-    this.Downloadfil = page.locator('//a[@id="link-to-download"]');
-    this.Mainhead = page.locator('//h1[text()="Automation Demo Site "]');
-    this.UploadPage = page.locator('//a[text()="File Upload"]');
-    this.UploadInput = page.locator('//input[@id="input-4"]');
-    this.removebutton = page.locator('//span[text()="Remove"]');
-    this.uploadbutton = page.locator('//span[text()="Upload"]');
-    this.BrowseFile = page.locator('//span[text()="Browse …"]');
+    this.generateButton = page.locator('//button[@id="createTxt"]');
+    this.downloadFil = page.locator('//a[@id="link-to-download"]');
+    this.mainHead = page.locator('//h1[text()="Automation Demo Site "]');
+
+    // Upload page
+    this.uploadPage = page.locator('//a[text()="File Upload"]');
+    this.uploadInput = page.locator('//input[@id="input-4"]');
+    this.removeButton = page.locator('//span[text()="Remove"]');
+    this.uploadButton = page.locator('//span[text()="Upload"]');
+    this.browseFile = page.locator('//span[text()="Browse …"]');
+
+    // Interaction and drag-and-drop
     this.interactionLink = page.locator('//a[text()="Interactions "]');
-    this.Staticlink = page.locator('//a[text()="Static "]');
-    this.Dragandrop = page.locator('//a[text()="Drag and Drop "]');
-    this.dragim1 = page.locator('//img[@id="angular"]');
-    this.dragim2 = page.locator('//img[@id="mongo"]');
-    this.dragim3 = page.locator('//img[@id="node"]');
-    this.droparea = page.locator('//div[@id="droparea"]');
-    this.checkdrop = page.locator('//div[@id="droparea"]');
+    this.staticLink = page.locator('//a[text()="Static "]');
+    this.dragAndDrop = page.locator('//a[text()="Drag and Drop "]');
+    this.dragIm1 = page.locator('//img[@id="angular"]');
+    this.dragIm2 = page.locator('//img[@id="mongo"]');
+    this.dragIm3 = page.locator('//img[@id="node"]');
+    this.dropArea = page.locator('//div[@id="droparea"]');
+    this.checkDrop = page.locator('//div[@id="droparea"]');
     this.dynamicLink = page.locator('//a[text()="Dynamic "]');
     this.downloadButton = page.locator("#link-to-download");
 
-    this.droparea = page.locator('//div[@id="droparea"]');
+    // Images for drag-and-drop validation
     this.angularImage = page.locator('//img[@id="angular"]');
     this.mongoImage = page.locator('//img[@id="mongo"]');
     this.nodeImage = page.locator('//img[@id="node"]');
-
     this.staticPage = page.locator('//a[text()="Static "]');
   }
 
   /**
-   * Navigate to the demo website.
-   * @param {void} - No parameters required.
+   * Launches the Automation Demo website.
+   * Navigates directly to the Static page for interactions.
    */
-  async Launchwebsite() {
+  async launchWebsite() {
     await this.page.goto("https://demo.automationtesting.in/Static.html");
-    await this.page.waitForTimeout(1000);
   }
 
   /**
-   * Navigate to the "More" page.
-   * @param {void} - No parameters required.
+   * Navigates to the "More" section on the site.
    */
-  async GotoMorepage() {
-    await this.Morelink.click();
-    await this.page.waitForTimeout(1000);
+  async gotoMorePage() {
+    await this.moreLink.click();
   }
 
   /**
-   * Navigate to the "File Download" page.
-   * @param {void} - No parameters required.
+   * Navigates to the "File Download" page.
    */
-  async NavigatetoDownloadpage() {
-    await this.Downloadpage.click();
-    await this.page.waitForTimeout(1000);
+  async navigateToDownloadPage() {
+    await this.downloadPage.click();
   }
 
   /**
-   * Enter text in the download text box.
-   * @param {void} - No parameters required.
+   * Enters sample text into the file download textbox.
+   * Used for generating downloadable text content.
    */
-  async Enterdataintextbox() {
+  async enterDataInTextBox() {
     await this.textBoxTxt.fill("Hi i am Batman");
     await this.page.keyboard.press("Enter");
-    await this.page.waitForTimeout(1000);
   }
 
   /**
-   * Click the "Generate" button to create the download link.
-   * @param {void} - No parameters required.
+   * Clicks the generate button to create a downloadable file link.
    */
-  async GenerateDownlink() {
-    await this.GenerateButton.click();
-    await this.page.waitForTimeout(1000);
+  async generateDownLink() {
+    await this.generateButton.click();
   }
 
   /**
-   * Download the generated file and validate its contents.
-   * @param {void} - No parameters required.
-   * @returns {Promise<void>} Verifies file existence, extension, and content.
+   * Downloads the generated text file and validates its content.
+   * Ensures that:
+   * - File is downloaded successfully
+   * - File extension is `.txt`
+   * - File contains expected content
    */
-  async DownloadFile() {
+  async downloadFile() {
     const [download] = await Promise.all([
       this.page.waitForEvent("download"),
       this.downloadButton.click(),
     ]);
-    const filePath = path.resolve(
-      __dirname,
-      "..",
-      "testdata",
-      await download.suggestedFilename()
-    );
+    const filePath = path.resolve(__dirname, "..", "testdata", await download.suggestedFilename());
     await download.saveAs(filePath);
     expect(fs.existsSync(filePath)).toBeTruthy();
     expect(path.extname(filePath)).toBe(".txt");
     const fileContent = fs.readFileSync(filePath, "utf-8").trim();
-    expect(fileContent).toBe("Hi i am Batman");
+    expect(fileContent, "Name is not Batman").toBe("Hi i am Batman");
   }
 
   /**
-   * Navigate to the "File Upload" page.
-   * @param {void} - No parameters required.
+   * Navigates to the File Upload page.
    */
-  async NavigatetoUploadpage() {
-    await this.UploadPage.click();
-    await this.page.waitForTimeout(1000);
+  async navigateToUploadPage() {
+    await this.uploadPage.click();
   }
 
   /**
-   * Upload a file to the page.
-   * @param {void} - No parameters required; file path is hardcoded inside method.
+   * Uploads a file (`info.txt`) from the local test data directory.
    */
   async uploadFile() {
-    const fileInput = this.UploadInput;
+    const fileInput = this.uploadInput;
     await fileInput.setInputFiles("Pages\\downloads\\info.txt");
-    await this.page.waitForTimeout(1000);
   }
 
   /**
-   * Remove the uploaded file.
-   * @param {void} - No parameters required.
+   * Removes an uploaded file using the "Remove" button.
    */
   async removeFile() {
-    await this.removebutton.click();
-    await this.page.waitForTimeout(1000);
+    await this.removeButton.click();
   }
 
   /**
-   * Submit the uploaded file.
-   * @param {void} - No parameters required.
+   * Submits the uploaded file by clicking the "Upload" button.
    */
-  async submitupload() {
-    await this.uploadbutton.click();
-    await this.page.waitForTimeout(1000);
+  async submitUpload() {
+    await this.uploadButton.click();
   }
 
   /**
-   * Navigate to the "Interactions" link.
-   * @param {void} - No parameters required.
+   * Navigates to the "Interactions" menu section.
    */
-  async NavigattoInteraction() {
+  async navigateToInteraction() {
     await this.interactionLink.click();
   }
 
   /**
-   * Navigate to the "Static" page.
-   * @param {void} - No parameters required.
+   * Navigates to the "Static" drag-and-drop page.
    */
-  async Navigatetostatic() {
-    await this.Staticlink.click();
-    await this.page.waitForTimeout(5000);
+  async navigateToStatic() {
+    await this.staticLink.click();
   }
 
   /**
-   * Navigate to the "Drag and Drop" page.
-   * @param {void} - No parameters required.
+   * Opens the "Drag and Drop" section.
    */
-  async gotodraganddrop() {
-    await this.Dragandrop.click();
+  async gotoDragAndDrop() {
+    await this.dragAndDrop.click();
   }
 
   /**
-   * Perform drag and drop for static images.
-   * @param {void} - No parameters required.
-   * @returns {Promise<void>} Performs drag-and-drop for Angular, Mongo, and Node images.
+   * Performs static drag-and-drop operation:
+   * Drags Angular, Mongo, and Node images into the drop area.
    */
-  async staticdraganddrop() {
-    const loc = this.droparea;
+  async staticDragAndDrop() {
+    const loc = this.dropArea;
     await this.angularImage.dragTo(loc);
     await this.mongoImage.dragTo(loc);
     await this.nodeImage.dragTo(loc);
-    await this.page.waitForTimeout(5000);
   }
 
   /**
-   * Navigate to the dynamic page.
-   * @param {void} - No parameters required.
+   * Navigates to the dynamic drag-and-drop page via hover action over "Static" menu.
    */
-  async Navigatetodynamic() {
+  async navigateToDynamic() {
     await this.staticPage.hover();
     await this.dynamicLink.click();
   }
 
   /**
-   * Perform drag and drop for dynamic images.
-   * @param {void} - No parameters required.
-   * @returns {Promise<void>} Performs drag-and-drop for Angular, Mongo, and Node images dynamically.
+   * Performs dynamic drag-and-drop:
+   * Drags Angular, Mongo, and Node images dynamically into the drop area.
    */
-  async dynamicdraganddrop() {
-    const loc = this.droparea;
+  async dynamicDragAndDrop() {
+    const loc = this.dropArea;
     await this.angularImage.dragTo(loc);
     await this.mongoImage.dragTo(loc);
     await this.nodeImage.dragTo(loc);
