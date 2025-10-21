@@ -20,7 +20,10 @@ on:
         default: 'example.spec.ts'
         options:
           - example.spec.ts
+          - playgrounddoc.spec.ts
+          - playgroundDynamic.spec.ts
           - qaplayground.spec.ts
+          - screener.spec.ts
           - All
 
 jobs:
@@ -39,19 +42,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: List Pages/downloads directory contents
-        run: ls -l Pages/downloads
-
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - name: Install Allure CLI
-        run: npm install -g allure-commandline
-
-      - name: Run tests and generate reports
+      - name: Install Allure CLI and single-file packager
         run: |
-          mkdir -p reports
-          SPECS=("example.spec.ts" "qaplayground.spec.ts")
+          npm install -g allure-commandline --save-dev
+          npm install allure-single-html-file-js --save-dev
+
+      - name: Run Playwright tests per spec and generate allure results
+        run: |
+          SPECS=("example.spec.ts" "playgrounddoc.spec.ts" "playgroundDynamic.spec.ts" "qaplayground.spec.ts" "screener.spec.ts")
           BROWSER="${{ github.event.inputs.browser }}"
           if [ "$BROWSER" = "edge" ]; then BROWSER="msedge"; fi
 
@@ -60,51 +61,33 @@ jobs:
               echo "Running $SPEC on $BROWSER ..."
               rm -rf allure-results
               npx playwright test tests/$SPEC --project=$BROWSER --reporter=line,allure-playwright
-              
-              if [ "$(ls allure-results/*.json 2>/dev/null | wc -l)" -eq 0 ]; then
-                echo "❌ Allure results not found for $SPEC, workflow exiting with failure."
-                exit 1
-              fi
-              
               cp -r allure-results "allure-results-$SPEC"
-              allure generate "allure-results-$SPEC" --clean -o "reports/$SPEC"
             done
-            allure generate allure-results-* --clean -o reports/overview
           else
             SPEC="${{ github.event.inputs.spec }}"
             echo "Running $SPEC on $BROWSER ..."
             rm -rf allure-results
             npx playwright test tests/$SPEC --project=$BROWSER --reporter=line,allure-playwright
-            
-            if [ "$(ls allure-results/*.json 2>/dev/null | wc -l)" -eq 0 ]; then
-              echo "❌ Allure results not found for $SPEC, workflow exiting with failure."
-              exit 1
-            fi
-            
             cp -r allure-results "allure-results-$SPEC"
-            allure generate "allure-results-$SPEC" --clean -o "reports/$SPEC"
-            allure generate "allure-results-$SPEC" --clean -o reports/overview
           fi
 
-      - name: Create index.html with overview and per-spec links
+      - name: Generate individual and combined Allure reports
         run: |
-          cat <<EOF > reports/index.html
-          <html>
-          <head><title>Allure Test Dashboard</title></head>
-          <body>
-            <h1>Combined Overview</h1>
-            <iframe src="overview/index.html" width="100%" height="600"></iframe>
-            <h2>Individual Spec Reports</h2>
-            <ul>
-              <li><a href="example.spec.ts/index.html" target="_blank">example.spec.ts</a></li>
-              <li><a href="qaplayground.spec.ts/index.html" target="_blank">qaplayground.spec.ts</a></li>
-            </ul>
-          </body>
-          </html>
-          EOF
+          mkdir -p allure-report
+          if [ "${{ github.event.inputs.spec }}" = "All" ]; then
+            allure generate allure-results-* --clean -o allure-report
+          else
+            allure generate allure-results-${{ github.event.inputs.spec }} --clean -o allure-report
+          fi
 
-      - name: Upload all reports artifact
+      - name: Combine into Single HTML File
+        run: |
+          node ./node_modules/allure-single-html-file-js/combine.js allure-report
+          mv allure-report/complete.html allure-report.html
+          echo "✅ Combined Allure HTML generated: allure-report.html"
+
+      - name: Upload Combined Allure HTML Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Allure-All-Reports
-          path: reports/
+          name: Allure-Report-Single-File
+          path: allure-report.html
