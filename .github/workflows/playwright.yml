@@ -39,6 +39,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: List Pages/downloads directory contents
+        run: ls -l Pages/downloads
+
       - name: Install Playwright browsers
         run: npx playwright install
 
