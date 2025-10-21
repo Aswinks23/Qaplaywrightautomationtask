@@ -20,7 +20,7 @@ on:
         default: 'example.spec.ts'
         options:
           - example.spec.ts
-          - screener.spec.ts
+          - qaplayground.spec.ts
           - All
 
 jobs:
@@ -47,7 +47,7 @@ jobs:
 
       - name: Run tests and generate reports
         run: |
-          SPECS=("example.spec.ts" "screener.spec.ts")
+          SPECS=("example.spec.ts" "qaplayground.spec.ts")
           BROWSER="${{ github.event.inputs.browser }}"
           if [ "$BROWSER" = "edge" ]; then BROWSER="msedge"; fi
 
@@ -78,7 +78,7 @@ jobs:
             <h2>Individual Spec Reports</h2>
             <ul>
               <li><a href="example.spec.ts/index.html" target="_blank">example.spec.ts</a></li>
-              <li><a href="screener.spec.ts/index.html" target="_blank">screener.spec.ts</a></li>
+              <li><a href="qaplayground.spec.ts/index.html" target="_blank">qaplayground.spec.ts</a></li>
             </ul>
           </body>
           </html>
