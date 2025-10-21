@@ -57,6 +57,12 @@ jobs:
               echo "Running $SPEC on $BROWSER ..."
               rm -rf allure-results
               npx playwright test tests/$SPEC --project=$BROWSER --reporter=line,allure-playwright
+              
+              if [ "$(ls allure-results/*.json 2>/dev/null | wc -l)" -eq 0 ]; then
+                echo "❌ Allure results not found for $SPEC, workflow exiting with failure."
+                exit 1
+              fi
+              
               cp -r allure-results "allure-results-$SPEC"
               allure generate "allure-results-$SPEC" --clean -o "reports/$SPEC"
             done
@@ -66,6 +72,12 @@ jobs:
             echo "Running $SPEC on $BROWSER ..."
             rm -rf allure-results
             npx playwright test tests/$SPEC --project=$BROWSER --reporter=line,allure-playwright
+            
+            if [ "$(ls allure-results/*.json 2>/dev/null | wc -l)" -eq 0 ]; then
+              echo "❌ Allure results not found for $SPEC, workflow exiting with failure."
+              exit 1
+            fi
+            
             cp -r allure-results "allure-results-$SPEC"
             allure generate "allure-results-$SPEC" --clean -o "reports/$SPEC"
             allure generate "allure-results-$SPEC" --clean -o reports/overview
