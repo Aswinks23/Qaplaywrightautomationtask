@@ -47,6 +47,7 @@ jobs:
 
       - name: Run tests and generate reports
         run: |
+          mkdir -p reports
           SPECS=("example.spec.ts" "qaplayground.spec.ts")
           BROWSER="${{ github.event.inputs.browser }}"
           if [ "$BROWSER" = "edge" ]; then BROWSER="msedge"; fi
@@ -54,21 +55,24 @@ jobs:
           if [ "${{ github.event.inputs.spec }}" = "All" ]; then
             for SPEC in "${SPECS[@]}"; do
               echo "Running $SPEC on $BROWSER ..."
-              npx playwright test tests/$SPEC --project=$BROWSER --reporter=line,allure-playwright --output=allure-results-$SPEC || true
-              allure generate allure-results-$SPEC --clean -o reports/$SPEC
+              rm -rf allure-results
+              npx playwright test tests/$SPEC --project=$BROWSER --reporter=line,allure-playwright
+              cp -r allure-results "allure-results-$SPEC"
+              allure generate "allure-results-$SPEC" --clean -o "reports/$SPEC"
             done
             allure generate allure-results-* --clean -o reports/overview
           else
             SPEC="${{ github.event.inputs.spec }}"
             echo "Running $SPEC on $BROWSER ..."
-            npx playwright test tests/$SPEC --project=$BROWSER --reporter=line,allure-playwright --output=allure-results-$SPEC || true
-            allure generate allure-results-$SPEC --clean -o reports/$SPEC
-            allure generate allure-results-$SPEC --clean -o reports/overview
+            rm -rf allure-results
+            npx playwright test tests/$SPEC --project=$BROWSER --reporter=line,allure-playwright
+            cp -r allure-results "allure-results-$SPEC"
+            allure generate "allure-results-$SPEC" --clean -o "reports/$SPEC"
+            allure generate "allure-results-$SPEC" --clean -o reports/overview
           fi
 
       - name: Create index.html with overview and per-spec links
         run: |
-          mkdir -p reports
           cat <<EOF > reports/index.html
           <html>
           <head><title>Allure Test Dashboard</title></head>
