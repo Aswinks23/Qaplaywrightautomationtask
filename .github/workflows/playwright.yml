@@ -58,16 +58,21 @@ jobs:
           mkdir -p allure-report
           allure generate allure-results --clean -o allure-report
 
-      - name: Save summary and upload results
+      - name: Combine Allure report into single HTML
+        if: always()
+        run: |
+          node ./node_modules/allure-single-html-file-js/combine.js allure-report
+          mv allure-report/complete.html single-allure-report.html
+
+      - name: Save summary and upload results with combined report
         if: always()
         run: |
           PASSED=$(node -e "let r=require('./allure-report/widgets/summary.json');console.log(r.statistic.passed)")
           FAILED=$(node -e "let r=require('./allure-report/widgets/summary.json');console.log(r.statistic.failed)")
           TOTAL=$(($PASSED + $FAILED))
           echo "${{ matrix.browser }}: $PASSED/$TOTAL" > results.txt
-        # Archive artifacts for downstream jobs
 
-      - name: Upload Allure artifacts
+      - name: Upload Allure artifacts per browser (including combined single file)
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -76,13 +81,14 @@ jobs:
             allure-results
             allure-report
             results.txt
+            single-allure-report.html
 
   select-browser:
     runs-on: ubuntu-latest
     needs: test
 
     steps:
-      - name: Download all results
+      - name: Download all browser results
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
@@ -93,37 +99,27 @@ jobs:
           best_browser=""
           best_rate=0
           for file in ./artifacts/allure-*/results.txt; do
-            browser=$(basename $(dirname $file) | cut -d'-' -f2)
-            PASS=$(cat $file | awk -F: '{print $2}' | awk -F'/' '{print $1}' | xargs)
-            TOTAL=$(cat $file | awk -F'/' '{print $2}' | xargs)
-            if [ "$TOTAL" -gt 0 ]; then
-              rate=$(awk "BEGIN { printf \"%.4f\", $PASS/$TOTAL }")
+            browser=$(basename $(dirname "$file") | sed 's/allure-//')
+            stats=$(cat "$file" | cut -d':' -f2 | xargs)
+            pass=$(echo "$stats" | cut -d'/' -f1)
+            total=$(echo "$stats" | cut -d'/' -f2)
+            if [ "$total" -gt 0 ]; then
+              rate=$(awk "BEGIN { printf \"%.4f\", $pass/$total }")
               if (( $(echo "$rate > $best_rate" | bc -l) )); then
                 best_rate=$rate
                 best_browser=$browser
               fi
             fi
           done
-          echo "Best browser: $best_browser"
+          echo "Best browser: $best_browser with pass rate $best_rate"
           echo "best=$best_browser" >> $GITHUB_OUTPUT
 
-      - name: Copy best browser's report for final publication
+      - name: Copy best browser's combined HTML report for final publication
         run: |
-          cp -r ./artifacts/allure-${{ steps.find_best.outputs.best }}/allure-report ./allure-report
+          cp ./artifacts/allure-${{ steps.find_best.outputs.best }}/single-allure-report.html ./best-allure-report.html
 
-      - name: Install Allure CLI and single-file packager
-        run: |
-          npm install -g allure-commandline --save-dev
-          npm install allure-single-html-file-js --save-dev
-
-      - name: Combine into Single Allure HTML File
-        run: |
-          node ./node_modules/allure-single-html-file-js/combine.js allure-report
-          mv allure-report/complete.html allure-report.html
-          echo "✅ Combined Allure HTML generated: allure-report.html"
-
-      - name: Upload Single Allure HTML File
+      - name: Upload best browser's combined Allure HTML report
         uses: actions/upload-artifact@v4
         with:
-          name: Allure-Report-Single-File
-          path: allure-report.html
+          name: Allure-Report-Best-Browser
+          path: best-allure-report.html
