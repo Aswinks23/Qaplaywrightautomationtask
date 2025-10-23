@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        browser: [chromium, firefox, webkit, edge]
+        browser: [chromium, firefox, webkit, Microsoft Edge]
  
     steps:
       - name: Checkout repository
