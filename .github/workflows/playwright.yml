@@ -92,18 +92,25 @@ jobs:
         run: |
           best_browser=""
           best_rate=0
+      
           for file in ./artifacts/allure-*/results.txt; do
-            browser=$(basename $(dirname $file) | cut -d'-' -f2)
-            PASS=$(cat $file | awk -F: '{print $2}' | awk -F'/' '{print $1}' | xargs)
-            TOTAL=$(cat $file | awk -F'/' '{print $2}' | xargs)
-            if [ "$TOTAL" -gt 0 ]; then
-              rate=$(awk "BEGIN { printf \"%.4f\", $PASS/$TOTAL }")
+            # Get full browser name including spaces by removing 'allure-' prefix
+            browser=$(basename $(dirname "$file") | sed 's/^allure-//')
+      
+            # Read passed and total values from the results.txt file
+            stats=$(cat "$file" | cut -d':' -f2 | xargs)
+            pass=$(echo "$stats" | cut -d'/' -f1)
+            total=$(echo "$stats" | cut -d'/' -f2)
+      
+            if [ "$total" -gt 0 ]; then
+              rate=$(awk "BEGIN { printf \"%.4f\", $pass / $total }")
               if (( $(echo "$rate > $best_rate" | bc -l) )); then
                 best_rate=$rate
                 best_browser=$browser
               fi
             fi
           done
+      
           echo "Best browser: $best_browser"
           echo "best=$best_browser" >> $GITHUB_OUTPUT
  
