@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        browser: [chromium, firefox, webkit, Microsoft Edge]
+        browser: [chromium, firefox, webkit, "Microsoft Edge"]
 
     steps:
       - name: Checkout repository
@@ -46,9 +46,9 @@ jobs:
       - name: Run Playwright tests on ${{ matrix.browser }}
         run: |
           if [ "${{ github.event.inputs.spec }}" = "All" ]; then
-            npx playwright test --project=${{ matrix.browser }} --reporter=line,allure-playwright --output=playwright-report
+            npx playwright test --project="${{ matrix.browser }}" --reporter=line,allure-playwright --output=playwright-report
           else
-            npx playwright test tests/${{ github.event.inputs.spec }} --project=${{ matrix.browser }} --reporter=line,allure-playwright --output=playwright-report
+            npx playwright test tests/${{ github.event.inputs.spec }} --project="${{ matrix.browser }}" --reporter=line,allure-playwright --output=playwright-report
           fi
         continue-on-error: true
 
@@ -81,7 +81,7 @@ jobs:
     needs: test
 
     steps:
-      - name: Download all results
+      - name: Download all browser results
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
@@ -92,20 +92,15 @@ jobs:
           best_browser=""
           best_rate=0
 
-          # Loop through results.txt of all browsers
           for file in ./artifacts/allure-*/results.txt; do
-            # Extract browser name from folder name
-            browser=$(basename $(dirname "$file") | cut -d'-' -f2)
+            # Remove 'allure-' prefix and keep full browser name (including spaces)
+            browser=$(basename $(dirname "$file") | sed 's/^allure-//')
+            stats=$(cat "$file" | cut -d':' -f2 | xargs)
+            pass=$(echo "$stats" | cut -d'/' -f1)
+            total=$(echo "$stats" | cut -d'/' -f2)
 
-            # Read pass and total counts from results.txt file
-            pass=$(cut -d':' -f2 "$file" | cut -d'/' -f1 | xargs)
-            total=$(cut -d'/' -f2 "$file" | xargs)
-
-            # Calculate pass rate if total is greater than zero
             if [ "$total" -gt 0 ]; then
               rate=$(awk "BEGIN { printf \"%.4f\", $pass / $total }")
-
-              # Update if this is the highest pass rate so far
               if (( $(echo "$rate > $best_rate" | bc -l) )); then
                 best_rate=$rate
                 best_browser=$browser
@@ -118,7 +113,7 @@ jobs:
 
       - name: Copy best browser's report for final publication
         run: |
-          cp -r ./artifacts/allure-${{ steps.find_best.outputs.best }}/allure-report ./allure-report
+          cp -r "./artifacts/allure-${{ steps.find_best.outputs.best }}" ./allure-report
 
       - name: Install Allure CLI and single-file packager
         run: |
