@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        browser: [chromium, firefox, webkit, edge]
+        browser: [chromium, firefox, webkit, Microsoft Edge]
  
     steps:
       - name: Checkout repository
@@ -92,20 +92,26 @@ jobs:
         run: |
           best_browser=""
           best_rate=0
+          # Loop through each browser's results.txt artifact
           for file in ./artifacts/allure-*/results.txt; do
-            browser=$(basename $(dirname $file) | cut -d'-' -f2)
-            PASS=$(cat $file | awk -F: '{print $2}' | awk -F'/' '{print $1}' | xargs)
-            TOTAL=$(cat $file | awk -F'/' '{print $2}' | xargs)
-            if [ "$TOTAL" -gt 0 ]; then
-              rate=$(awk "BEGIN { printf \"%.4f\", $PASS/$TOTAL }")
+            # Extract the browser name from the folder structure
+            browser=$(basename $(dirname "$file") | sed 's/allure-//')
+            # Read out the number of passes and total from the results.txt
+            stats=$(cat "$file" | cut -d':' -f2 | xargs)
+            pass=$(echo "$stats" | cut -d'/' -f1)
+            total=$(echo "$stats" | cut -d'/' -f2)
+            if [ "$total" -gt 0 ]; then
+              rate=$(awk "BEGIN { printf \"%.4f\", $pass/$total }")
+              # If this browser has a higher pass rate, remember it
               if (( $(echo "$rate > $best_rate" | bc -l) )); then
                 best_rate=$rate
                 best_browser=$browser
               fi
             fi
           done
-          echo "Best browser: $best_browser"
+          echo "Best browser: $best_browser with pass rate $best_rate"
           echo "best=$best_browser" >> $GITHUB_OUTPUT
+
  
       - name: Copy best browser's report for final publication
         run: |
