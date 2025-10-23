@@ -93,7 +93,7 @@ jobs:
           best_rate=0
 
           for file in ./artifacts/allure-*/results.txt; do
-            # Remove 'allure-' prefix and keep full browser name (including spaces)
+            # Preserve full folder name including spaces
             browser=$(basename $(dirname "$file") | sed 's/^allure-//')
             stats=$(cat "$file" | cut -d':' -f2 | xargs)
             pass=$(echo "$stats" | cut -d'/' -f1)
