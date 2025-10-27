@@ -76,9 +76,6 @@ jobs:
             allure-results
             allure-report
             results.txt
-
-  pass percent:
-  
  
   select-browser:
     runs-on: ubuntu-latest
