@@ -130,4 +130,7 @@ jobs:
         with:
           name: Allure-Report-Single-File
           path: allure-report.html
-display the highest pass percentage
+      - name: Add summary with pass rate
+        run: |
+          echo "Uploaded report from **${{ steps.find_best.outputs.best }}** browser" >> $GITHUB_STEP_SUMMARY
+          echo "Pass Percentage: **${{ steps.find_best.outputs.rate }}%**" >> $GITHUB_STEP_SUMMARY
