@@ -125,6 +125,7 @@ jobs:
           echo "✅ Combined Allure HTML generated: allure-report.html"
 
       - name: Upload Single Allure HTML File
+      
         uses: actions/upload-artifact@v4
         with:
           name: Allure-Report-Single-File
