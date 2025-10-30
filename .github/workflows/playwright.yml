@@ -195,7 +195,17 @@ jobs:
 
       - name: Copy best browser's report for final publication
         run: |
-          cp -r ./artifacts/allure-${{ steps.find_best.outputs.best }}/allure-report ./allure-report
+          REPORT_DIR="./artifacts/allure-${{ steps.find_best.outputs.best }}/allure-report"
+          if [ -d "$REPORT_DIR" ]; then
+            cp -r "$REPORT_DIR" ./allure-report
+            echo "Successfully copied allure report from $REPORT_DIR"
+          else
+            echo "Error: Directory $REPORT_DIR does not exist"
+            ls -l ./artifacts/allure-${{ steps.find_best.outputs.best }}
+            echo "Available artifact directories:"
+            ls -l ./artifacts
+            exit 1
+          fi
 
       - name: Install Allure CLI and single-file packager
         run: |
