@@ -52,10 +52,93 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
+
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'example.spec.ts (chromium)',
+      testMatch: 'example.spec.ts',
+      use: { ...devices['Desktop Chrome'] }
     },
+    {
+      name: 'example.spec.ts (firefox)',
+      testMatch: 'example.spec.ts',
+      use: { ...devices['Desktop Firefox'] }
+    },
+    {
+      name: 'example.spec.ts (webkit)',
+      testMatch: 'example.spec.ts',
+      use: { ...devices['Desktop Safari'] }
+    },
+    {
+      name: 'example.spec.ts (edge)',
+      testMatch: 'example.spec.ts',
+      use: { ...devices['Desktop Edge'], channel: 'msedge' }
+    },
+
+    {
+      name: 'playgrounddoc.spec.ts (chromium)',
+      testMatch: 'playgrounddoc.spec.ts',
+      use: { ...devices['Desktop Chrome'] }
+    },
+    {
+      name: 'playgrounddoc.spec.ts (firefox)',
+      testMatch: 'playgrounddoc.spec.ts',
+      use: { ...devices['Desktop Firefox'] }
+    },
+    {
+      name: 'playgrounddoc.spec.ts (webkit)',
+      testMatch: 'playgrounddoc.spec.ts',
+      use: { ...devices['Desktop Safari'] }
+    },
+    {
+      name: 'playgrounddoc.spec.ts (edge)',
+      testMatch: 'playgrounddoc.spec.ts',
+      use: { ...devices['Desktop Edge'], channel: 'msedge' }
+    },
+    {
+      name: 'playgroundDynamic.spec.ts (chromium)',
+      testMatch: 'playgroundDynamic.spec.ts',
+      use: { ...devices['Desktop Chrome'] }
+    },
+    {
+      name: 'playgroundDynamic.spec.ts (firefox)',
+      testMatch: 'playgroundDynamic.spec.ts',
+      use: { ...devices['Desktop Firefox'] }
+    },
+    {
+      name: 'playgroundDynamic.spec.ts (webkit)',
+      testMatch: 'playgroundDynamic.spec.ts',
+      use: { ...devices['Desktop Safari'] }
+    },
+    {
+      name: 'playgroundDynamic.spec.ts (edge)',
+      testMatch: 'playgroundDynamic.spec.ts',
+      use: { ...devices['Desktop Edge'], channel: 'msedge' }
+    },
+    {
+      name: 'screener.spec.ts (chromium)',
+      testMatch: 'screener.spec.ts',
+      use: { ...devices['Desktop Chrome'] }
+    },
+    {
+      name: 'screener.spec.ts (firefox)',
+      testMatch: 'screener.spec.ts',
+      use: { ...devices['Desktop Firefox'] }
+    },
+    {
+      name: 'screener.spec.ts (webkit)',
+      testMatch: 'screener.spec.ts',
+      use: { ...devices['Desktop Safari'] }
+    },
+    {
+      name: 'screener.spec.ts (edge)',
+      testMatch: 'screener.spec.ts',
+      use: { ...devices['Desktop Edge'], channel: 'msedge' }
+    },
+
+    // {
+    //   name: 'chromium',
+    //   use: { ...devices['Desktop Chrome'] },
+    // },
 
     // {
     //   name: 'firefox',
@@ -78,10 +161,10 @@ export default defineConfig({
     // },
 
     /* Test against branded browsers. */
-    // {
+    //  {
     //   name: 'Microsoft Edge',
     //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
+    //  },
     // {
     //   name: 'Google Chrome',
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
@@ -97,3 +180,6 @@ export default defineConfig({
 
 
 });
+
+
+

@@ -28,7 +28,7 @@ test.describe("Static Table Export Excel Validations", () => {
         throw new Error(`Excel file not found at path: ${excelPath}`);
       }
     });
-
+    
     await test.step("Validate the Excel content matches the table data", async () => {
       await staticTablePage.validateExcel(excelPath, tableData);
     });
