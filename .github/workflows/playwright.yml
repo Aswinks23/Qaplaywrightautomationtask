@@ -195,14 +195,14 @@ jobs:
 
       - name: Copy best browser's report for final publication
         run: |
-          REPORT_DIR="./artifacts/allure-${{ steps.find_best.outputs.best }}/allure-report"
+          REPORT_DIR=$(find ./artifacts -type d -name "allure-${{ steps.find_best.outputs.best }}*" -exec find {} -type d -name allure-report \; | head -n 1)
+
           if [ -d "$REPORT_DIR" ]; then
             cp -r "$REPORT_DIR" ./allure-report
-            echo "Successfully copied allure report from $REPORT_DIR"
+            echo "Copied allure report from $REPORT_DIR"
           else
-            echo "Error: Directory $REPORT_DIR does not exist"
-            ls -l ./artifacts/allure-${{ steps.find_best.outputs.best }}
-            echo "Available artifact directories:"
+            echo "Error: Could not find allure-report directory for best browser '${{ steps.find_best.outputs.best }}'"
+            echo "Available artifact folders:"
             ls -l ./artifacts
             exit 1
           fi
